@@ -117,7 +117,18 @@ const EmailComposer = () => {
 
   const handleApplyTemplate = (template: EmailTemplate) => {
     setSubject(template.subject);
-    setBody(template.content);
+    // Don't directly set body state - we need to update the editor content too
+    // which will trigger onChange and update the body state
+    const editorElement = document.querySelector('[contenteditable=true]');
+    if (editorElement) {
+      editorElement.innerHTML = template.content;
+      // Trigger the onChange event to update the state
+      const event = new Event('input', { bubbles: true });
+      editorElement.dispatchEvent(event);
+    } else {
+      // Fallback if direct DOM manipulation fails
+      setBody(template.content);
+    }
     
     toast({
       title: "Template Applied",

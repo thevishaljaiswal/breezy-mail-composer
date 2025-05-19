@@ -10,13 +10,18 @@ interface EmailEditorProps {
 export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
-  
-  // Initialize editor content only once on mount
+
+  // Initialize editor content on mount and when initialValue changes
   useEffect(() => {
-    if (editorRef.current && initialValue) {
-      editorRef.current.innerHTML = initialValue;
+    if (editorRef.current) {
+      // Only set content if it's different, to avoid cursor position issues
+      if (editorRef.current.innerHTML !== initialValue) {
+        editorRef.current.innerHTML = initialValue;
+        // Trigger onChange to ensure state is in sync
+        onChange(initialValue);
+      }
     }
-  }, []);
+  }, [initialValue, onChange]);
 
   const handleEditorChange = () => {
     if (editorRef.current) {
