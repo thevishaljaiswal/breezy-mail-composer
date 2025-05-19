@@ -1,14 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bold, Italic, Underline, Text, TextQuote, List, ListOrdered, Link, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Input } from '@/components/ui/input';
+import { Toolbar } from './Toolbar';
 
 interface EmailEditorProps {
   initialValue?: string;
@@ -18,31 +10,50 @@ interface EmailEditorProps {
 export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [editorContent, setEditorContent] = useState(initialValue);
 
+  // Initialize editor content properly
   useEffect(() => {
-    if (editorRef.current) {
+    if (editorRef.current && initialValue) {
       editorRef.current.innerHTML = initialValue;
+      setEditorContent(initialValue);
     }
   }, [initialValue]);
 
   const handleEditorChange = () => {
     if (editorRef.current) {
       const content = editorRef.current.innerHTML;
+      setEditorContent(content);
       onChange(content);
+    }
+  };
+
+  // Ensure focus stays in editor after commands
+  const focusEditor = () => {
+    if (editorRef.current) {
+      editorRef.current.focus();
     }
   };
 
   const execCommand = (command: string, value: string = '') => {
     document.execCommand(command, false, value);
     handleEditorChange();
-    editorRef.current?.focus();
+    focusEditor();
   };
 
-  const formatText = (format: string) => {
+  const handleFormatText = (format: string) => {
     execCommand(format);
   };
 
-  const createLink = (url: string) => {
+  const handleInsertList = (type: string) => {
+    execCommand(type);
+  };
+
+  const handleAlignText = (alignment: string) => {
+    execCommand('justify' + alignment);
+  };
+
+  const handleInsertLink = (url: string) => {
     if (url) {
       execCommand('createLink', url);
     }
@@ -50,108 +61,12 @@ export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
 
   return (
     <div className="flex flex-col border rounded-md">
-      <div className="flex items-center gap-0.5 border-b p-1 bg-email-background">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => formatText('bold')}
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => formatText('italic')}
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => formatText('underline')}
-        >
-          <Underline className="h-4 w-4" />
-        </Button>
-
-        <Separator orientation="vertical" className="mx-1 h-6" />
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => execCommand('insertUnorderedList')}
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => execCommand('insertOrderedList')}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => execCommand('formatBlock', '<blockquote>')}
-        >
-          <TextQuote className="h-4 w-4" />
-        </Button>
-
-        <Separator orientation="vertical" className="mx-1 h-6" />
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-            >
-              <Link className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm">Insert Link</h4>
-              <Input
-                id="link-url"
-                placeholder="https://example.com"
-                className="col-span-3 h-8"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    createLink((e.target as HTMLInputElement).value);
-                    document.body.click(); // Close popover
-                  }
-                }}
-              />
-              <div className="flex justify-end">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    const url = document.getElementById('link-url') as HTMLInputElement;
-                    createLink(url.value);
-                    document.body.click(); // Close popover
-                  }}
-                >
-                  Insert
-                </Button>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+      <Toolbar 
+        onFormatText={handleFormatText}
+        onInsertList={handleInsertList}
+        onAlignText={handleAlignText}
+        onInsertLink={handleInsertLink}
+      />
 
       <div
         ref={editorRef}
@@ -163,6 +78,7 @@ export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         suppressContentEditableWarning
+        dangerouslySetInnerHTML={{ __html: initialValue }}
       />
     </div>
   );
