@@ -10,20 +10,17 @@ interface EmailEditorProps {
 export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
-  const [editorContent, setEditorContent] = useState(initialValue);
-
-  // Initialize editor content properly
+  
+  // Initialize editor content only once on mount
   useEffect(() => {
     if (editorRef.current && initialValue) {
       editorRef.current.innerHTML = initialValue;
-      setEditorContent(initialValue);
     }
-  }, [initialValue]);
+  }, []);
 
   const handleEditorChange = () => {
     if (editorRef.current) {
       const content = editorRef.current.innerHTML;
-      setEditorContent(content);
       onChange(content);
     }
   };
@@ -78,7 +75,6 @@ export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         suppressContentEditableWarning
-        dangerouslySetInnerHTML={{ __html: initialValue }}
       />
     </div>
   );
