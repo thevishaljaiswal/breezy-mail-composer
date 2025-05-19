@@ -1,11 +1,9 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -13,16 +11,13 @@ import {
   Paperclip,
   Save,
   Calendar,
-  Bold,
-  Italic,
-  Underline,
-  ListOrdered,
-  Link
 } from 'lucide-react';
 import { validateEmail } from '@/lib/utils';
 import { EmailRecipient } from '@/components/EmailRecipient';
-import { Toolbar } from '@/components/Toolbar';
 import { AttachmentList } from '@/components/AttachmentList';
+import { EmailEditor } from '@/components/EmailEditor';
+import { EmailTemplates, EmailTemplate } from '@/components/EmailTemplates';
+import { EmailSignature, EmailSignatureItem } from '@/components/EmailSignature';
 
 export type Recipient = {
   id: string;
@@ -45,8 +40,31 @@ const EmailComposer = () => {
   const [body, setBody] = useState('');
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [selectedSignature, setSelectedSignature] = useState<EmailSignatureItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Check for saved draft on component mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('emailDraft');
+    if (savedDraft) {
+      try {
+        const { recipients, subject, body } = JSON.parse(savedDraft);
+        setRecipients(recipients || []);
+        setSubject(subject || '');
+        setBody(body || '');
+        
+        if (recipients?.some((r: Recipient) => r.type === 'cc')) {
+          setShowCc(true);
+        }
+        if (recipients?.some((r: Recipient) => r.type === 'bcc')) {
+          setShowBcc(true);
+        }
+      } catch (e) {
+        console.error('Error loading draft', e);
+      }
+    }
+  }, []);
 
   const handleAddRecipient = (email: string, type: 'to' | 'cc' | 'bcc') => {
     if (!email) return;
@@ -97,6 +115,39 @@ const EmailComposer = () => {
     setAttachments(attachments.filter(a => a.id !== id));
   };
 
+  const handleApplyTemplate = (template: EmailTemplate) => {
+    setSubject(template.subject);
+    setBody(template.content);
+    
+    toast({
+      title: "Template Applied",
+      description: `The "${template.name}" template has been applied.`,
+    });
+  };
+
+  const handleSaveTemplate = (template: Partial<EmailTemplate>) => {
+    toast({
+      title: "Template Saved",
+      description: `"${template.name}" has been saved as a template.`,
+    });
+  };
+
+  const handleApplySignature = (signature: EmailSignatureItem) => {
+    // If body already has content, append signature, otherwise just set it
+    if (body && !body.includes(signature.content)) {
+      setBody(`${body}<div><br></div>${signature.content}`);
+    } else if (!body) {
+      setBody(signature.content);
+    }
+    
+    setSelectedSignature(signature);
+    
+    toast({
+      title: "Signature Applied",
+      description: `The "${signature.name}" signature has been applied.`,
+    });
+  };
+
   const handleSendEmail = () => {
     // Validation
     const toRecipients = recipients.filter(r => r.type === 'to');
@@ -124,6 +175,13 @@ const EmailComposer = () => {
       title: "Email Sent",
       description: `Your email was sent to ${toRecipients.map(r => r.email).join(', ')}`,
     });
+    
+    // Clear the form and localStorage after sending
+    setRecipients([]);
+    setSubject('');
+    setBody('');
+    setAttachments([]);
+    localStorage.removeItem('emailDraft');
   };
 
   const handleSaveDraft = () => {
@@ -265,15 +323,23 @@ const EmailComposer = () => {
             />
           </div>
 
-          {/* Toolbar */}
-          <Toolbar />
+          {/* Templates and Signatures */}
+          <div className="flex items-center gap-2">
+            <EmailTemplates 
+              onSelectTemplate={handleApplyTemplate}
+              onSaveTemplate={handleSaveTemplate}
+              currentSubject={subject}
+              currentContent={body}
+            />
+            <EmailSignature 
+              onSelectSignature={handleApplySignature}
+            />
+          </div>
 
-          {/* Body */}
-          <Textarea 
-            className="min-h-[300px] resize-y"
-            placeholder="Compose your email..."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
+          {/* Rich Text Editor */}
+          <EmailEditor 
+            initialValue={body}
+            onChange={setBody}
           />
 
           {/* Attachments */}
