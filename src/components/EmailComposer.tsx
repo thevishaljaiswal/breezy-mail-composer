@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
@@ -216,7 +216,7 @@ const EmailComposer = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto shadow-lg">
       <CardHeader className="bg-email-background border-b border-email-border">
-        <CardTitle className="text-xl text-email-primary font-medium">New Message</CardTitle>
+        {/* Title removed from here */}
       </CardHeader>
 
       <CardContent className="p-4">
