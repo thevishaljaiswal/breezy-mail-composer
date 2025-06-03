@@ -61,6 +61,10 @@ export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
     }
   };
 
+  const handleFontChange = (fontFamily: string) => {
+    execCommand('fontName', fontFamily);
+  };
+
   return (
     <div className="flex flex-col border rounded-md">
       <Toolbar 
@@ -68,6 +72,7 @@ export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
         onInsertList={handleInsertList}
         onAlignText={handleAlignText}
         onInsertLink={handleInsertLink}
+        onFontChange={handleFontChange}
       />
 
       <div

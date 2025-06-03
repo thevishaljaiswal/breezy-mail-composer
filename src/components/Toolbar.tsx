@@ -8,6 +8,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 
 interface ToolbarProps {
@@ -15,9 +22,21 @@ interface ToolbarProps {
   onInsertList: (type: string) => void;
   onAlignText: (alignment: string) => void;
   onInsertLink: (url: string) => void;
+  onFontChange: (fontFamily: string) => void;
 }
 
-export function Toolbar({ onFormatText, onInsertList, onAlignText, onInsertLink }: ToolbarProps) {
+const FONT_OPTIONS = [
+  { value: 'Arial, sans-serif', label: 'Arial' },
+  { value: 'Helvetica, sans-serif', label: 'Helvetica' },
+  { value: 'Times New Roman, serif', label: 'Times New Roman' },
+  { value: 'Georgia, serif', label: 'Georgia' },
+  { value: 'Verdana, sans-serif', label: 'Verdana' },
+  { value: 'Courier New, monospace', label: 'Courier New' },
+  { value: 'Tahoma, sans-serif', label: 'Tahoma' },
+  { value: 'Trebuchet MS, sans-serif', label: 'Trebuchet MS' },
+];
+
+export function Toolbar({ onFormatText, onInsertList, onAlignText, onInsertLink, onFontChange }: ToolbarProps) {
   const [linkUrl, setLinkUrl] = React.useState('');
 
   const handleLinkInsert = () => {
@@ -29,6 +48,21 @@ export function Toolbar({ onFormatText, onInsertList, onAlignText, onInsertLink 
 
   return (
     <div className="flex items-center gap-0.5 border-b p-1 bg-email-background">
+      <Select onValueChange={onFontChange}>
+        <SelectTrigger className="w-[140px] h-8">
+          <SelectValue placeholder="Font" />
+        </SelectTrigger>
+        <SelectContent>
+          {FONT_OPTIONS.map((font) => (
+            <SelectItem key={font.value} value={font.value}>
+              <span style={{ fontFamily: font.value }}>{font.label}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
       <Button
         type="button"
         variant="ghost"
