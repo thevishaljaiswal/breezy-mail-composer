@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Link, List, ListOrdered } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,7 @@ interface ToolbarProps {
   onAlignText: (alignment: string) => void;
   onInsertLink: (url: string) => void;
   onFontChange: (fontFamily: string) => void;
+  onFontSizeChange: (fontSize: string) => void;
 }
 
 const FONT_OPTIONS = [
@@ -36,7 +36,17 @@ const FONT_OPTIONS = [
   { value: 'Trebuchet MS, sans-serif', label: 'Trebuchet MS' },
 ];
 
-export function Toolbar({ onFormatText, onInsertList, onAlignText, onInsertLink, onFontChange }: ToolbarProps) {
+const FONT_SIZE_OPTIONS = [
+  { value: '1', label: '8pt' },
+  { value: '2', label: '10pt' },
+  { value: '3', label: '12pt' },
+  { value: '4', label: '14pt' },
+  { value: '5', label: '18pt' },
+  { value: '6', label: '24pt' },
+  { value: '7', label: '36pt' },
+];
+
+export function Toolbar({ onFormatText, onInsertList, onAlignText, onInsertLink, onFontChange, onFontSizeChange }: ToolbarProps) {
   const [linkUrl, setLinkUrl] = React.useState('');
 
   const handleLinkInsert = () => {
@@ -56,6 +66,19 @@ export function Toolbar({ onFormatText, onInsertList, onAlignText, onInsertLink,
           {FONT_OPTIONS.map((font) => (
             <SelectItem key={font.value} value={font.value}>
               <span style={{ fontFamily: font.value }}>{font.label}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select onValueChange={onFontSizeChange}>
+        <SelectTrigger className="w-[80px] h-8">
+          <SelectValue placeholder="Size" />
+        </SelectTrigger>
+        <SelectContent>
+          {FONT_SIZE_OPTIONS.map((size) => (
+            <SelectItem key={size.value} value={size.value}>
+              {size.label}
             </SelectItem>
           ))}
         </SelectContent>
