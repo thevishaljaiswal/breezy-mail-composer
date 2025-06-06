@@ -36,6 +36,7 @@ const PROFESSIONAL_SIGNATURE_CONTENT = `<div style="font-family: Arial, sans-ser
   <p style="margin: 0; padding: 0;"><strong>Customer Support Manager</strong></p>
   <p style="margin: 0; padding: 0; color: #666;">Gera Developments Private Limited</p>
   <br>
+  <p style="margin: 0; padding: 0;">📧 Email: <a href="mailto:customersupport@gera.in" style="color: #0066cc; text-decoration: none;">customersupport@gera.in</a></p>
   <p style="margin: 0; padding: 0;">📞 Phone: <a href="tel:+912048555656" style="color: #0066cc; text-decoration: none;">+91 20 4855 5656</a></p>
   <p style="margin: 0; padding: 0; font-size: 12px; color: #888;">(Mon-Fri, 11:00 AM - 7:00 PM IST)</p>
   <br>
