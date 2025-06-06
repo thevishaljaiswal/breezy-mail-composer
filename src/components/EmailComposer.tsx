@@ -41,6 +41,13 @@ const PROFESSIONAL_SIGNATURE_CONTENT = `<div style="font-family: Arial, sans-ser
   <p style="margin: 0; padding: 0; font-size: 12px; color: #888;">(Mon-Fri, 11:00 AM - 7:00 PM IST)</p>
   <br>
   <p style="margin: 0; padding: 0;">📱 App: <a href="#" style="color: #0066cc; text-decoration: none;">Gera World App for Android Users</a> | <a href="#" style="color: #0066cc; text-decoration: none;">Gera World App for Apple Users</a></p>
+  <br>
+  <p style="margin: 0; padding: 0;"><a href="https://www.gera.in" style="color: #0066cc; text-decoration: none;">www.gera.in</a></p>
+  <p style="margin: 0; padding: 0;">Connect with us: <a href="#" style="color: #0066cc; text-decoration: none;">/ GeraDevelopments</a></p>
+  <br>
+  <p style="margin: 0; padding: 0; font-size: 11px; color: #666; line-height: 1.4;">
+    <strong>Disclaimer:</strong> This email is intended to be delivered only to the named addressee(s) and may contain information that is confidential, proprietary, or attorney-client privileged. If this information is received by anyone other than the named addressees the recipient should immediately notify the sender by email. In no event shall this material be read, used, reproduced, stored or retained by anyone other than the named addressees, except with the express written consent of the sender or the named addressees. Please consider the environment before printing this e-mail.
+  </p>
 </div>`;
 
 const EmailComposer = () => {
