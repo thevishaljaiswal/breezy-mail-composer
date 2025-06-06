@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,8 +73,8 @@ const EmailComposer = () => {
         console.error('Error loading draft', e);
       }
     } else {
-      // If no saved draft, automatically apply professional signature
-      setBody(PROFESSIONAL_SIGNATURE_CONTENT);
+      // If no saved draft, automatically apply professional signature at the bottom
+      setBody(`<br><br><br>${PROFESSIONAL_SIGNATURE_CONTENT}`);
     }
   }, []);
 

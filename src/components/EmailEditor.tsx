@@ -19,6 +19,30 @@ export function EmailEditor({ initialValue = '', onChange }: EmailEditorProps) {
         editorRef.current.innerHTML = initialValue;
         // Trigger onChange to ensure state is in sync
         onChange(initialValue);
+        
+        // Position cursor at the beginning of the editor
+        if (initialValue && editorRef.current) {
+          const range = document.createRange();
+          const selection = window.getSelection();
+          
+          // Find the first text node or create one if none exists
+          let firstNode = editorRef.current.firstChild;
+          if (!firstNode || firstNode.nodeType !== Node.TEXT_NODE) {
+            // Insert a line break at the beginning to position cursor above signature
+            const br = document.createElement('br');
+            editorRef.current.insertBefore(br, editorRef.current.firstChild);
+            range.setStartBefore(br);
+            range.setEndBefore(br);
+          } else {
+            range.setStart(firstNode, 0);
+            range.setEnd(firstNode, 0);
+          }
+          
+          if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
       }
     }
   }, [initialValue, onChange]);
