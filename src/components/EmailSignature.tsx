@@ -33,8 +33,22 @@ const DEFAULT_SIGNATURE: EmailSignatureItem = {
   content: '<p>Best regards,</p><p><strong>Your Name</strong></p><p>Position | Company</p><p>Phone: (123) 456-7890</p>'
 };
 
+const PROFESSIONAL_SIGNATURE: EmailSignatureItem = {
+  id: 'professional',
+  name: 'Professional',
+  content: `<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+    <p style="margin: 0; padding: 0;"><strong>Customer Support Manager</strong></p>
+    <p style="margin: 0; padding: 0; color: #666;">Gera Developments Private Limited</p>
+    <br>
+    <p style="margin: 0; padding: 0;">📞 Phone: <a href="tel:+912048555656" style="color: #0066cc; text-decoration: none;">+91 20 4855 5656</a></p>
+    <p style="margin: 0; padding: 0; font-size: 12px; color: #888;">(Mon-Fri, 11:00 AM - 7:00 PM IST)</p>
+    <br>
+    <p style="margin: 0; padding: 0;">📱 App: <a href="#" style="color: #0066cc; text-decoration: none;">Gera World App for Android Users</a> | <a href="#" style="color: #0066cc; text-decoration: none;">Gera World App for Apple Users</a></p>
+  </div>`
+};
+
 export function EmailSignature({ onSelectSignature }: EmailSignatureProps) {
-  const [signatures, setSignatures] = useState<EmailSignatureItem[]>([DEFAULT_SIGNATURE]);
+  const [signatures, setSignatures] = useState<EmailSignatureItem[]>([DEFAULT_SIGNATURE, PROFESSIONAL_SIGNATURE]);
   const [editingSignature, setEditingSignature] = useState<EmailSignatureItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [signatureName, setSignatureName] = useState('');
@@ -46,7 +60,7 @@ export function EmailSignature({ onSelectSignature }: EmailSignatureProps) {
     if (savedSignatures) {
       try {
         const parsed = JSON.parse(savedSignatures);
-        setSignatures([DEFAULT_SIGNATURE, ...parsed]);
+        setSignatures([DEFAULT_SIGNATURE, PROFESSIONAL_SIGNATURE, ...parsed]);
       } catch (e) {
         console.error('Error parsing saved signatures', e);
       }
@@ -73,8 +87,8 @@ export function EmailSignature({ onSelectSignature }: EmailSignatureProps) {
 
     setSignatures(updatedSignatures);
     
-    // Save to localStorage (excluding default signature)
-    const toSave = updatedSignatures.filter(sig => sig.id !== 'default');
+    // Save to localStorage (excluding default signatures)
+    const toSave = updatedSignatures.filter(sig => sig.id !== 'default' && sig.id !== 'professional');
     localStorage.setItem('emailSignatures', JSON.stringify(toSave));
     
     setIsDialogOpen(false);
@@ -84,6 +98,11 @@ export function EmailSignature({ onSelectSignature }: EmailSignatureProps) {
   };
 
   const startEditSignature = (signature: EmailSignatureItem) => {
+    // Don't allow editing of default signatures
+    if (signature.id === 'default' || signature.id === 'professional') {
+      return;
+    }
+    
     setEditingSignature(signature);
     setSignatureName(signature.name);
     setSignatureContent(signature.content);
@@ -119,14 +138,16 @@ export function EmailSignature({ onSelectSignature }: EmailSignatureProps) {
                   >
                     {sig.name}
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => startEditSignature(sig)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <FileText className="h-4 w-4" />
-                  </Button>
+                  {sig.id !== 'default' && sig.id !== 'professional' && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => startEditSignature(sig)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
