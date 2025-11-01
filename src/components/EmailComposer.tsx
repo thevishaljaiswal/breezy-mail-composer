@@ -17,6 +17,7 @@ import { AttachmentList } from '@/components/AttachmentList';
 import { EmailEditor } from '@/components/EmailEditor';
 import { EmailTemplates, EmailTemplate } from '@/components/EmailTemplates';
 import { EmailSignature, EmailSignatureItem } from '@/components/EmailSignature';
+import { MultiRecipientSelector } from '@/components/MultiRecipientSelector';
 
 export type Recipient = {
   id: string;
@@ -127,6 +128,38 @@ const EmailComposer = () => {
     };
 
     setRecipients([...recipients, newRecipient]);
+  };
+
+  const handleAddMultipleRecipients = (emails: string[], type: 'to' | 'cc' | 'bcc') => {
+    const validEmails = emails.filter(email => validateEmail(email));
+    const invalidEmails = emails.filter(email => !validateEmail(email));
+
+    if (invalidEmails.length > 0) {
+      toast({
+        title: "Some Invalid Emails",
+        description: `${invalidEmails.length} email(s) were skipped due to invalid format.`,
+        variant: "destructive",
+      });
+    }
+
+    // Filter out duplicates
+    const existingEmails = recipients.map(r => r.email);
+    const newEmails = validEmails.filter(email => !existingEmails.includes(email));
+
+    const newRecipients: Recipient[] = newEmails.map(email => ({
+      id: Math.random().toString(36).substring(2, 9),
+      email,
+      type
+    }));
+
+    setRecipients([...recipients, ...newRecipients]);
+
+    if (newRecipients.length > 0) {
+      toast({
+        title: "Recipients Added",
+        description: `${newRecipients.length} recipient(s) added to ${type.toUpperCase()}.`,
+      });
+    }
   };
 
   const handleRemoveRecipient = (id: string) => {
@@ -289,6 +322,10 @@ const EmailComposer = () => {
                 />
               </div>
               <div className="flex gap-1 ml-2">
+                <MultiRecipientSelector 
+                  recipientType="to"
+                  onAddRecipients={(emails) => handleAddMultipleRecipients(emails, 'to')}
+                />
                 <Button 
                   variant="ghost" 
                   className="h-8 text-xs" 
@@ -331,6 +368,12 @@ const EmailComposer = () => {
                     }}
                   />
                 </div>
+                <div className="ml-2">
+                  <MultiRecipientSelector 
+                    recipientType="cc"
+                    onAddRecipients={(emails) => handleAddMultipleRecipients(emails, 'cc')}
+                  />
+                </div>
               </div>
             )}
 
@@ -357,6 +400,12 @@ const EmailComposer = () => {
                         target.value = '';
                       }
                     }}
+                  />
+                </div>
+                <div className="ml-2">
+                  <MultiRecipientSelector 
+                    recipientType="bcc"
+                    onAddRecipients={(emails) => handleAddMultipleRecipients(emails, 'bcc')}
                   />
                 </div>
               </div>
