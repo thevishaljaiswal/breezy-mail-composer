@@ -17,12 +17,15 @@ import { AttachmentList } from '@/components/AttachmentList';
 import { EmailEditor } from '@/components/EmailEditor';
 import { EmailTemplates, EmailTemplate } from '@/components/EmailTemplates';
 import { EmailSignature, EmailSignatureItem } from '@/components/EmailSignature';
-import { MultiRecipientSelector } from '@/components/MultiRecipientSelector';
+import { MultiRecipientSelector, Customer } from '@/components/MultiRecipientSelector';
+import { PlaceholderHelper } from '@/components/PlaceholderHelper';
+import { replacePlaceholders, CustomerData } from '@/lib/placeholders';
 
 export type Recipient = {
   id: string;
   email: string;
   type: 'to' | 'cc' | 'bcc';
+  customerData?: CustomerData;
 }
 
 export type Attachment = {
@@ -130,34 +133,40 @@ const EmailComposer = () => {
     setRecipients([...recipients, newRecipient]);
   };
 
-  const handleAddMultipleRecipients = (emails: string[], type: 'to' | 'cc' | 'bcc') => {
-    const validEmails = emails.filter(email => validateEmail(email));
-    const invalidEmails = emails.filter(email => !validateEmail(email));
+  const handleAddMultipleRecipients = (customers: Customer[], type: 'to' | 'cc' | 'bcc') => {
+    const validCustomers = customers.filter(customer => validateEmail(customer.email));
+    const invalidCustomers = customers.filter(customer => !validateEmail(customer.email));
 
-    if (invalidEmails.length > 0) {
+    if (invalidCustomers.length > 0) {
       toast({
-        title: "Some Invalid Emails",
-        description: `${invalidEmails.length} email(s) were skipped due to invalid format.`,
+        title: "Invalid emails detected",
+        description: `${invalidCustomers.length} email(s) were invalid and skipped.`,
         variant: "destructive",
       });
     }
 
-    // Filter out duplicates
-    const existingEmails = recipients.map(r => r.email);
-    const newEmails = validEmails.filter(email => !existingEmails.includes(email));
+    if (validCustomers.length > 0) {
+      const newRecipients: Recipient[] = validCustomers.map(customer => ({
+        id: Math.random().toString(36).substring(7),
+        email: customer.email,
+        type,
+        customerData: {
+          email: customer.email,
+          name: customer.name,
+          firstName: customer.firstName,
+          lastName: customer.lastName,
+          company: customer.company,
+          phone: customer.phone,
+          project: customer.project,
+          unitNumber: customer.unitNumber,
+          customerID: customer.customerID,
+        }
+      }));
 
-    const newRecipients: Recipient[] = newEmails.map(email => ({
-      id: Math.random().toString(36).substring(2, 9),
-      email,
-      type
-    }));
-
-    setRecipients([...recipients, ...newRecipients]);
-
-    if (newRecipients.length > 0) {
+      setRecipients(prev => [...prev, ...newRecipients]);
       toast({
-        title: "Recipients Added",
-        description: `${newRecipients.length} recipient(s) added to ${type.toUpperCase()}.`,
+        title: "Recipients added",
+        description: `Successfully added ${validCustomers.length} recipient(s) to ${type.toUpperCase()}.`,
       });
     }
   };
@@ -191,24 +200,39 @@ const EmailComposer = () => {
   };
 
   const handleApplyTemplate = (template: EmailTemplate) => {
-    setSubject(template.subject);
+    // If we have a single recipient with customer data, replace placeholders
+    const toRecipients = recipients.filter(r => r.type === 'to');
+    let finalSubject = template.subject;
+    let finalContent = template.content;
+    
+    if (toRecipients.length === 1 && toRecipients[0].customerData) {
+      const customerData = toRecipients[0].customerData;
+      finalSubject = replacePlaceholders(template.subject, customerData);
+      finalContent = replacePlaceholders(template.content, customerData);
+      toast({
+        title: "Template Applied",
+        description: `Template "${template.name}" personalized for ${customerData.firstName || customerData.name}.`,
+      });
+    } else {
+      toast({
+        title: "Template Applied",
+        description: `The "${template.name}" template has been applied.`,
+      });
+    }
+    
+    setSubject(finalSubject);
     // Don't directly set body state - we need to update the editor content too
     // which will trigger onChange and update the body state
     const editorElement = document.querySelector('[contenteditable=true]');
     if (editorElement) {
-      editorElement.innerHTML = template.content;
+      editorElement.innerHTML = finalContent;
       // Trigger the onChange event to update the state
       const event = new Event('input', { bubbles: true });
       editorElement.dispatchEvent(event);
     } else {
       // Fallback if direct DOM manipulation fails
-      setBody(template.content);
+      setBody(finalContent);
     }
-    
-    toast({
-      title: "Template Applied",
-      description: `The "${template.name}" template has been applied.`,
-    });
   };
 
   const handleSaveTemplate = (template: Partial<EmailTemplate>) => {
@@ -255,11 +279,30 @@ const EmailComposer = () => {
       return;
     }
 
+    // For each recipient with customer data, send personalized email
+    const emailsToSend = recipients.map(recipient => {
+      if (recipient.customerData) {
+        return {
+          to: recipient.email,
+          subject: replacePlaceholders(subject, recipient.customerData),
+          content: replacePlaceholders(body, recipient.customerData),
+          type: recipient.type,
+        };
+      }
+      return {
+        to: recipient.email,
+        subject,
+        content: body,
+        type: recipient.type,
+      };
+    });
+
     // In a real app, we would send the email here
-    // For now, we'll just show a success toast
+    console.log('Sending personalized emails:', emailsToSend);
+
     toast({
       title: "Email Sent",
-      description: `Your email was sent to ${toRecipients.map(r => r.email).join(', ')}`,
+      description: `Your email was sent to ${toRecipients.length} recipient(s) with personalized content`,
     });
     
     // Clear the form and localStorage after sending
@@ -324,7 +367,7 @@ const EmailComposer = () => {
               <div className="flex gap-1 ml-2">
                 <MultiRecipientSelector 
                   recipientType="to"
-                  onAddRecipients={(emails) => handleAddMultipleRecipients(emails, 'to')}
+                  onAddRecipients={(customers) => handleAddMultipleRecipients(customers, 'to')}
                 />
                 <Button 
                   variant="ghost" 
@@ -334,7 +377,7 @@ const EmailComposer = () => {
                   Cc
                 </Button>
                 <Button 
-                  variant="ghost" 
+                  variant="ghost"
                   className="h-8 text-xs" 
                   onClick={() => setShowBcc(!showBcc)}
                 >
@@ -371,7 +414,7 @@ const EmailComposer = () => {
                 <div className="ml-2">
                   <MultiRecipientSelector 
                     recipientType="cc"
-                    onAddRecipients={(emails) => handleAddMultipleRecipients(emails, 'cc')}
+                    onAddRecipients={(customers) => handleAddMultipleRecipients(customers, 'cc')}
                   />
                 </div>
               </div>
@@ -405,7 +448,7 @@ const EmailComposer = () => {
                 <div className="ml-2">
                   <MultiRecipientSelector 
                     recipientType="bcc"
-                    onAddRecipients={(emails) => handleAddMultipleRecipients(emails, 'bcc')}
+                    onAddRecipients={(customers) => handleAddMultipleRecipients(customers, 'bcc')}
                   />
                 </div>
               </div>
@@ -436,6 +479,7 @@ const EmailComposer = () => {
             <EmailSignature 
               onSelectSignature={handleApplySignature}
             />
+            <PlaceholderHelper />
           </div>
 
           {/* Rich Text Editor */}
