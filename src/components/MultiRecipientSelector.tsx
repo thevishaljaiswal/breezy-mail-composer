@@ -6,28 +6,127 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users } from 'lucide-react';
 
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  phone?: string;
+  project?: string;
+  unitNumber?: string;
+  customerID?: string;
+}
+
 // Sample customer list - in a real app, this would come from a database
-const SAMPLE_CUSTOMERS = [
-  { id: '1', name: 'John Doe', email: 'john.doe@example.com' },
-  { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com' },
-  { id: '3', name: 'Robert Johnson', email: 'robert.j@example.com' },
-  { id: '4', name: 'Emily Davis', email: 'emily.davis@example.com' },
-  { id: '5', name: 'Michael Brown', email: 'michael.b@example.com' },
-  { id: '6', name: 'Sarah Wilson', email: 'sarah.wilson@example.com' },
-  { id: '7', name: 'David Martinez', email: 'david.m@example.com' },
-  { id: '8', name: 'Lisa Anderson', email: 'lisa.anderson@example.com' },
-  { id: '9', name: 'James Taylor', email: 'james.taylor@example.com' },
-  { id: '10', name: 'Jennifer White', email: 'jennifer.w@example.com' },
+const SAMPLE_CUSTOMERS: Customer[] = [
+  { 
+    id: '1', 
+    name: 'Rajesh Kumar', 
+    email: 'rajesh.kumar@example.com',
+    firstName: 'Rajesh',
+    lastName: 'Kumar',
+    company: 'Tech Solutions Pvt Ltd',
+    phone: '+91 98765 43210',
+    project: 'Gera Park View',
+    unitNumber: 'A-1201',
+    customerID: 'GER001'
+  },
+  { 
+    id: '2', 
+    name: 'Priya Sharma', 
+    email: 'priya.sharma@example.com',
+    firstName: 'Priya',
+    lastName: 'Sharma',
+    company: 'Sharma Enterprises',
+    phone: '+91 98765 43211',
+    project: 'Gera World of Joy',
+    unitNumber: 'B-502',
+    customerID: 'GER002'
+  },
+  { 
+    id: '3', 
+    name: 'Amit Patel', 
+    email: 'amit.patel@example.com',
+    firstName: 'Amit',
+    lastName: 'Patel',
+    company: 'Patel Industries',
+    phone: '+91 98765 43212',
+    project: 'Gera Emerald City',
+    unitNumber: 'C-703',
+    customerID: 'GER003'
+  },
+  { 
+    id: '4', 
+    name: 'Sneha Reddy', 
+    email: 'sneha.reddy@example.com',
+    firstName: 'Sneha',
+    lastName: 'Reddy',
+    company: 'Reddy Constructions',
+    phone: '+91 98765 43213',
+    project: 'Gera Song of Joy',
+    unitNumber: 'D-304',
+    customerID: 'GER004'
+  },
+  { 
+    id: '5', 
+    name: 'Vikram Singh', 
+    email: 'vikram.singh@example.com',
+    firstName: 'Vikram',
+    lastName: 'Singh',
+    company: 'Singh & Associates',
+    phone: '+91 98765 43214',
+    project: 'Gera Isle Royale',
+    unitNumber: 'E-1505',
+    customerID: 'GER005'
+  },
+  { 
+    id: '6', 
+    name: 'Anita Desai', 
+    email: 'anita.desai@example.com',
+    firstName: 'Anita',
+    lastName: 'Desai',
+    company: 'Desai Exports',
+    phone: '+91 98765 43215',
+    project: 'Gera Aster Villas',
+    unitNumber: 'F-201',
+    customerID: 'GER006'
+  },
+  { 
+    id: '7', 
+    name: 'Karan Malhotra', 
+    email: 'karan.malhotra@example.com',
+    firstName: 'Karan',
+    lastName: 'Malhotra',
+    company: 'Malhotra Group',
+    phone: '+91 98765 43216',
+    project: 'Gera Trinity Towers',
+    unitNumber: 'G-902',
+    customerID: 'GER007'
+  },
+  { 
+    id: '8', 
+    name: 'Deepika Iyer', 
+    email: 'deepika.iyer@example.com',
+    firstName: 'Deepika',
+    lastName: 'Iyer',
+    company: 'Iyer Consulting',
+    phone: '+91 98765 43217',
+    project: 'Gera Park View',
+    unitNumber: 'H-1104',
+    customerID: 'GER008'
+  },
 ];
 
 interface MultiRecipientSelectorProps {
-  onAddRecipients: (emails: string[]) => void;
+  onAddRecipients: (customers: Customer[]) => void;
   recipientType: 'to' | 'cc' | 'bcc';
 }
 
 export const MultiRecipientSelector = ({ onAddRecipients, recipientType }: MultiRecipientSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCustomers = SAMPLE_CUSTOMERS.filter(customer =>
@@ -35,26 +134,28 @@ export const MultiRecipientSelector = ({ onAddRecipients, recipientType }: Multi
     customer.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleToggleEmail = (email: string) => {
-    setSelectedEmails(prev =>
-      prev.includes(email)
-        ? prev.filter(e => e !== email)
-        : [...prev, email]
+  const handleToggleCustomer = (id: string) => {
+    setSelectedCustomers(prev =>
+      prev.includes(id)
+        ? prev.filter(cid => cid !== id)
+        : [...prev, id]
     );
   };
 
   const handleSelectAll = () => {
-    if (selectedEmails.length === filteredCustomers.length) {
-      setSelectedEmails([]);
+    if (selectedCustomers.length === filteredCustomers.length) {
+      setSelectedCustomers([]);
     } else {
-      setSelectedEmails(filteredCustomers.map(c => c.email));
+      setSelectedCustomers(filteredCustomers.map(c => c.id));
     }
   };
 
   const handleAddSelected = () => {
-    if (selectedEmails.length > 0) {
-      onAddRecipients(selectedEmails);
-      setSelectedEmails([]);
+    if (selectedCustomers.length > 0) {
+      const selectedCustomersData = SAMPLE_CUSTOMERS
+        .filter(customer => selectedCustomers.includes(customer.id));
+      onAddRecipients(selectedCustomersData);
+      setSelectedCustomers([]);
       setSearchQuery('');
       setOpen(false);
     }
@@ -94,14 +195,14 @@ export const MultiRecipientSelector = ({ onAddRecipients, recipientType }: Multi
           
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {selectedEmails.length} selected
+              {selectedCustomers.length} selected
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSelectAll}
             >
-              {selectedEmails.length === filteredCustomers.length ? 'Deselect All' : 'Select All'}
+              {selectedCustomers.length === filteredCustomers.length ? 'Deselect All' : 'Select All'}
             </Button>
           </div>
 
@@ -111,8 +212,8 @@ export const MultiRecipientSelector = ({ onAddRecipients, recipientType }: Multi
                 <div key={customer.id} className="flex items-start space-x-3">
                   <Checkbox
                     id={customer.id}
-                    checked={selectedEmails.includes(customer.email)}
-                    onCheckedChange={() => handleToggleEmail(customer.email)}
+                    checked={selectedCustomers.includes(customer.id)}
+                    onCheckedChange={() => handleToggleCustomer(customer.id)}
                   />
                   <label
                     htmlFor={customer.id}
@@ -139,9 +240,9 @@ export const MultiRecipientSelector = ({ onAddRecipients, recipientType }: Multi
           </Button>
           <Button 
             onClick={handleAddSelected}
-            disabled={selectedEmails.length === 0}
+            disabled={selectedCustomers.length === 0}
           >
-            Add {selectedEmails.length} Recipient{selectedEmails.length !== 1 ? 's' : ''}
+            Add {selectedCustomers.length} Recipient{selectedCustomers.length !== 1 ? 's' : ''}
           </Button>
         </DialogFooter>
       </DialogContent>
